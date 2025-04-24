@@ -1,0 +1,102 @@
++-----------------+
+|     User        |
++-----------------+
+| - id: String    |
+| - name: String  |
++-----------------+
+| +getId()        |
+| +getName()      |
++-----------------+
+
++------------------------+
+|      Document          |
++------------------------+
+| - name: String         |
+| - content: String      |
++------------------------+
+| +getName()             |
+| +getContent()          |
+| +setContent(String)    |
+| +clone(): Document     |
++------------------------+
+
++-------------------------------------+
+|              Commit                |
++-------------------------------------+
+| - id: String                       |
+| - message: String                  |
+| - timestamp: Instant              |
+| - parent: Commit                   |
+| - snapshot: Map<String, Document>  |
++-------------------------------------+
+| +getId()                           |
+| +getMessage()                      |
+| +getTimestamp()                    |
+| +getParent()                       |
+| +getSnapshot()                     |
++-------------------------------------+
+
++-----------------------+
+|       Branch          |
++-----------------------+
+| - name: String        |
+| - head: Commit        |
++-----------------------+
+| +getName()            |
+| +getHead()            |
+| +setHead(Commit)      |
++-----------------------+
+
++---------------------------------------------+
+|               Repository                    |
++---------------------------------------------+
+| - id: String                                |
+| - name: String                              |
+| - owner: User                               |
+| - branches: Map<String, Branch>             |
+| - currentBranch: Branch                     |
+| - workingDirectory: Map<String, Document>   |
++---------------------------------------------+
+| +getId()                                    |
+| +getName()                                  |
+| +getOwner()                                 |
+| +getCurrentBranch()                         |
+| +getBranches()                              |
+| +getWorkingDirectory()                      |
+| +switchBranch(String)                       |
+| +createBranch(String)                       |
++---------------------------------------------+
+
+          +------------------------+
+          |    <<interface>>       |
+          |     DiffStrategy       |
+          +------------------------+
+          | +calculateDiff(String, |
+          |   String): String      |
+          +------------------------+
+                  /_\\
+                   |
+                   |
+     +----------------------------+
+     |     LineDiffStrategy       |
+     +----------------------------+
+     | +calculateDiff(String,     |
+     |   String): String          |
+     +----------------------------+
+
++-----------------------------------------+
+|           VersionManager                |
++-----------------------------------------+
+| - diffStrategy: DiffStrategy            |
++-----------------------------------------+
+| +commit(Repository, String)             |
+| +log(Repository)                        |
+| +diff(Commit, Commit)                   |
+| +mergeBranches(Repository, String)      |
++-----------------------------------------+
+
++------------------------+
+|         Main           |
++------------------------+
+| +main(String[] args)   |
++------------------------+
