@@ -10,7 +10,7 @@ public class Repository {
     private final User owner;
     private final Map<String, Branch> branches;
     private Branch currentBranch;
-    private final Map<String, Document> workingDirectory;
+    private final Map<String, Document> workingDirectory; // the actual files you see and edit in your local directory, changes here are made before committing
 
     public Repository(String name, User owner) {
         this.id = UUID.randomUUID().toString();
