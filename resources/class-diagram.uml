@@ -8,15 +8,26 @@
 | +getName()      |
 +-----------------+
 
++-----------------+
+|   FileState     |
++-----------------+
+| UNMODIFIED      |
+| MODIFIED        |
+| UNTRACKED       |
++-----------------+
+
 +------------------------+
 |      Document          |
 +------------------------+
 | - name: String         |
 | - content: String      |
+| - state: FileState     |
 +------------------------+
 | +getName()             |
 | +getContent()          |
 | +setContent(String)    |
+| +getState()            |
+| +setState(FileState)   |
 | +clone(): Document     |
 +------------------------+
 
@@ -36,16 +47,20 @@
 | +getSnapshot()                     |
 +-------------------------------------+
 
-+-----------------------+
-|       Branch          |
-+-----------------------+
-| - name: String        |
-| - head: Commit        |
-+-----------------------+
-| +getName()            |
-| +getHead()            |
-| +setHead(Commit)      |
-+-----------------------+
++-----------------------------------------+
+|       Branch                            |
++-----------------------------------------+
+| - name: String                          |
+| - head: Commit                          |
+| - stash: Queue<Map<String, Document>>   |
++-----------------------------------------+
+| +getName()                              |
+| +getHead()                              |
+| +setHead(Commit)                        |
+| +stashChanges(Map<String, Document>)    |
+| +popStash()                            |
+| +hasStash()                            |
++-----------------------------------------+
 
 +---------------------------------------------+
 |               Repository                    |
@@ -93,6 +108,9 @@
 | +log(Repository)                        |
 | +diff(Commit, Commit)                   |
 | +mergeBranches(Repository, String)      |
+| +status(Repository)                     |
+| +stash(Repository)                      |
+| +stashPop(Repository)                   |
 +-----------------------------------------+
 
 +------------------------+
