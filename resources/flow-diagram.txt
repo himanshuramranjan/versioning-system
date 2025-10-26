@@ -1,0 +1,130 @@
+User Interaction Flow:
+--------------------
+
+1. Initialize Repository:
+User -> Main -> Repository
+   |            |
+   |            v
+   |         Create Initial Commit
+   |            |
+   |            v
+   |         Create Main Branch
+   |
+   v
+Start Making Changes
+
+2. File Changes & Commit:
+User -> Working Directory -> Add/Modify Files
+   |         |
+   |         v
+   |     Document (state: MODIFIED/UNTRACKED)
+   |         |
+   v         v
+VersionManager.commit() -> Create New Commit
+                             |
+                             v
+                          Update Branch HEAD
+
+3. Branch Operations:
+User -> Repository.createBranch("feature")
+   |         |
+   |         v
+   |     Create New Branch (points to current HEAD)
+   |         |
+   v         v
+Repository.switchBranch("feature")
+            |
+            v
+         Set Current Branch
+
+4. Stash Operations:
+User -> VersionManager.stash()
+   |         |
+   |         v
+   |     Save Working Directory to Current Branch's Stash (per-branch, not global!)
+   |         |
+   v         v
+VersionManager.stashPop()
+   |         |
+   |         v
+   |     Restore Files from Stash (only if stashed in this branch)
+   |
+   v
+Continue Working
+
+5. Merge Flow:
+User -> VersionManager.mergeBranches()
+            |
+            v
+        Get Source Branch HEAD Snapshot
+            |
+            v
+        Overwrite Target Branch Working Directory with Source Files (simple overwrite, not 3-way merge)
+            |
+            v
+        Create Merge Commit in Target Branch
+            |
+            v
+        Update Current Branch HEAD
+
+6. Status Check:
+User -> VersionManager.status()
+            |
+            v
+        Compare Working Directory with HEAD
+            |
+            v
+        Display Modified/Untracked Files
+
+7. View History:
+User -> VersionManager.log()
+            |
+            v
+        Get Current Branch HEAD
+            |
+            v
+        Traverse Commit Chain
+            |
+            v
+        Display Commit Info
+
+
+
+
+
+Example User Session Flow:
+------------------------
+[User]
+   |
+   v
+1. Create Repository
+   |
+   v
+2. Add readme.md (UNTRACKED)
+   |
+   v
+3. Commit (becomes UNMODIFIED)
+   |
+   v
+4. Modify readme.md (becomes MODIFIED)
+   |
+   v
+5. Create feature branch
+   |
+   v
+6. Stash changes
+   |
+   v
+7. Switch to feature branch
+   |
+   v
+8. Pop stash
+   |
+   v
+9. Commit changes
+   |
+   v
+10. Switch to main
+    |
+    v
+11. Merge feature branch
