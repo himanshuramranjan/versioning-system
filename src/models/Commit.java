@@ -9,8 +9,8 @@ public class Commit {
     private final String id;
     private final String message;
     private final Instant timestamp;
-    private final Commit parent;
-    private final Map<String, Document> snapshot; // immutable copy of the working directory createad at commit time
+    private final Commit parent; // kind of linked list of commits to chain them together
+    private final Map<String, Document> snapshot; // immutable copy of the working directory created at commit time
 
     public Commit(String message, Commit parent, Map<String, Document> workingDir) {
         this.id = UUID.randomUUID().toString();
@@ -20,8 +20,8 @@ public class Commit {
         this.snapshot = new HashMap<>();
         // Create snapshot and update working directory file states
         workingDir.forEach((k, v) -> {
+            v.setState(FileState.UNMODIFIED);
             snapshot.put(k, v.clone());
-            v.setState(FileState.UNMODIFIED); // Update state after committing
         });
     }
 
