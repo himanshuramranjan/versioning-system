@@ -11,15 +11,17 @@ public class VersionManager {
     private final DiffStrategy diffStrategy = new LineDiffStrategy();
 
     // Creates a new commit from the current working directory state.
-    public void commit(Repository repo, String message) {
-        Commit newCommit = new Commit(message, repo.getCurrentBranch().getHead(), repo.getWorkingDirectory());
-        repo.getCurrentBranch().setHead(newCommit);
+    public void commit(Branch branch, String message) {
+        // can validate if there are any changes or not
+        Commit newCommit = new Commit(message, branch.getHead(), branch.getBranchDirectory());
+        branch.setHead(newCommit);
+        System.out.println("Changes committed successfully on the branch " + branch.getName());
     }
 
     // Displays the commit history starting from the current branch's HEAD.
     // Traverses the commit chain using parent references.
-    public void log(Repository repo) {
-        Commit head = repo.getCurrentBranch().getHead();
+    public void log(Branch branch) {
+        Commit head = branch.getHead();
         while (head != null) {
             System.out.println("Commit: " + head.getId());
             System.out.println("Message: " + head.getMessage());
@@ -42,33 +44,35 @@ public class VersionManager {
 
     // Merges changes from a source branch into the current branch.
     // Implements a simplified merge strategy (no conflict resolution).
-    public void mergeBranches(Repository repo, String sourceBranchName) throws CloneNotSupportedException {
+    public void mergeBranches(Repository repo, String sourceBranchName, String targetBranchName) throws CloneNotSupportedException {
         Branch source = repo.getBranches().get(sourceBranchName);
+        Branch target = repo.getBranches().get(targetBranchName);
 
-        if (source == null) {
-            throw new IllegalArgumentException("Source branch doesnt exist");
+        if (source == null || target == null) {
+            throw new IllegalArgumentException("Source or Target branch doesn't exist");
         }
 
         // Get the snapshots from both branches
         Commit base = source.getHead();
         Map<String, Document> sourceFiles = base.getSnapshot();
+        target.getBranchDirectory().clear();
 
         // Copy files from source to working directory
         for (String name : sourceFiles.keySet()) {
             Document sourceDoc = sourceFiles.get(name);
             Document newDoc = sourceDoc.clone();
             newDoc.setState(FileState.MODIFIED); // Changes from merge should be marked as modified
-            repo.getWorkingDirectory().put(name, newDoc);
+            target.getBranchDirectory().put(name, newDoc);
         }
 
         // Create merge commit
-        commit(repo, "Merged branch " + sourceBranchName);
+        commit(target, "Merged branch " + sourceBranchName);
     }
 
     // Shows the current state of files in the working directory.
     // Displays which files are modified or untracked.
-    public void status(Repository repo) {
-        Map<String, Document> workingDir = repo.getWorkingDirectory();
+    public void status(Branch branch) {
+        Map<String, Document> workingDir = branch.getBranchDirectory();
 
         System.out.println("Changes in working directory:");
         for (Map.Entry<String, Document> entry : workingDir.entrySet()) {
@@ -92,24 +96,22 @@ public class VersionManager {
 
     // Temporarily stores current working directory changes.
     // Similar to 'git stash' command.
-    public void stash(Repository repo) {
-        Branch currentBranch = repo.getCurrentBranch();
-        currentBranch.stashChanges(repo.getWorkingDirectory());
-        repo.getWorkingDirectory().clear();
+    public void stash(Branch branch) {
+        // check if there are any changes first
+        branch.stashChanges();
         System.out.println("Changes stashed successfully");
     }
 
     // Restores the most recently stashed changes.
     // Similar to 'git stash pop' command.
-    public void stashPop(Repository repo) {
-        Branch currentBranch = repo.getCurrentBranch();
-        if (!currentBranch.hasStash()) {
+    public void stashPop(Branch branch) {
+
+        if (branch.hasNoStash()) {
             System.out.println("No stash found");
             return;
         }
 
-        Map<String, Document> stashedChanges = currentBranch.popStash();
-        repo.getWorkingDirectory().putAll(stashedChanges);
+        branch.popStash();
         System.out.println("Stashed changes applied successfully");
     }
 }
