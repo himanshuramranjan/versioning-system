@@ -9,7 +9,6 @@ public class Repository {
     private final String name;
     private final User owner;
     private final Map<String, Branch> branches;
-    private Branch currentBranch;
     private final Map<String, Document> workingDirectory; // the actual files you see and edit in your local directory, changes here are made before committing
 
     public Repository(String name, User owner) {
@@ -19,22 +18,39 @@ public class Repository {
         this.branches = new HashMap<>();
         this.workingDirectory = new HashMap<>();
 
-        Commit initialCommit = new Commit("Initial Commit", null, workingDirectory);
-        Branch main = new Branch("main", initialCommit);
+        Branch main = new Branch("main", this);
         branches.put("main", main);
-        currentBranch = main;
+        switchBranch("main");
     }
 
-    public void switchBranch(String branchName) {
-        if(branches.containsKey(branchName)) {
-            currentBranch = branches.get(branchName);
-        } else {
-            throw new IllegalArgumentException("Branch not found : " + branchName);
+    public Branch switchBranch(String targetBranchName) {
+        Branch target = getBranches().get(targetBranchName);
+
+        if (target == null) {
+            throw new IllegalArgumentException("Target branch doesn't exist");
         }
+
+        // Check for uncommitted changes in working directory
+        boolean hasUncommittedChanges = false;
+        for (Document doc : getWorkingDirectory().values()) {
+            if (doc.getState() == FileState.MODIFIED || doc.getState() == FileState.UNTRACKED) {
+                hasUncommittedChanges = true;
+                break;
+            }
+        }
+
+        // Prevent switch if there are uncommitted changes
+        if (hasUncommittedChanges) {
+            System.out.println("Error: You have uncommitted changes. Commit or stash them before switching branches.");
+            return null;
+        }
+
+        System.out.println("Switched to branch " + targetBranchName);
+        return this.getBranches().get(targetBranchName);
     }
 
     public void createBranch(String name) {
-        branches.put(name, new Branch(name, currentBranch.getHead()));
+        branches.put(name, new Branch(name, this));
     }
 
     public String getId() {
@@ -51,10 +67,6 @@ public class Repository {
 
     public Map<String, Branch> getBranches() {
         return branches;
-    }
-
-    public Branch getCurrentBranch() {
-        return currentBranch;
     }
 
     public Map<String, Document> getWorkingDirectory() {
